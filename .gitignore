@@ -1,0 +1,13 @@
+# Dependencies / OS junk (none expected — this is a dependency-free static site)
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+
+# Editor / local tooling
+.vscode/
+.idea/
+
+# IMPORTANT: .kiro/ must stay tracked.
+# The Kiroween 2026 hackathon requires the /.kiro directory (specs, hooks,
+# steering) at the repo root. Never add .kiro to this file.

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="sunset">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mixtape Revival</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header>
+    <div class="header-brand">
+      <div class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 24" width="48" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="1" y="1" width="46" height="22" rx="3" fill="var(--cassette-body)" stroke="var(--accent)" stroke-width="1.5"/>
+          <circle cx="13" cy="12" r="6" fill="var(--cassette-window)" stroke="var(--accent)" stroke-width="1"/>
+          <circle cx="13" cy="12" r="2.5" fill="var(--accent)"/>
+          <circle cx="35" cy="12" r="6" fill="var(--cassette-window)" stroke="var(--accent)" stroke-width="1"/>
+          <circle cx="35" cy="12" r="2.5" fill="var(--accent)"/>
+          <rect x="18" y="8" width="12" height="8" rx="1" fill="var(--cassette-label)"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Mixtape Revival</h1>
+        <p class="tagline">Make a tape. Write a message. Give it away.</p>
+      </div>
+    </div>
+    <nav class="header-actions" aria-label="Tape actions">
+      <button id="btn-share" class="btn btn-primary" aria-label="Copy share link">
+        <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M13 6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-9 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm9 0a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm-1-4.586L6.414 11.5l-.707-.707L11.293 5.207l.707.707z" fill="currentColor"/></svg>
+        Share
+      </button>
+      <button id="btn-export" class="btn btn-secondary" aria-label="Download tape as JSON">
+        <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 15l-5-5h3V3h4v7h3l-5 5zM3 17h14v2H3v-2z" fill="currentColor"/></svg>
+        Export
+      </button>
+      <label class="btn btn-secondary" aria-label="Import tape from JSON file">
+        <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 5l5 5h-3v7H8v-7H5l5-5zM3 1h14v2H3V1z" fill="currentColor"/></svg>
+        Import
+        <input id="btn-import-file" type="file" accept=".json,application/json" style="display:none" aria-label="Choose tape JSON file" />
+      </label>
+      <button id="btn-print" class="btn btn-secondary" aria-label="Print J-card cover">
+        <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M5 4v3H4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h1v2a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-2h1a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-1V4a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1zm2 0h6v3H7V4zm-1 9h8v4H6v-4zm8-4a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" fill="currentColor"/></svg>
+        Print cover
+      </button>
+      <button id="btn-clear" class="btn btn-danger" aria-label="Clear the tape">
+        <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M6 2l1-1h6l1 1h4v2H2V2h4zM3 6h14l-1 12H4L3 6zm5 2v8h1V8H8zm3 0v8h1V8h-1z" fill="currentColor"/></svg>
+        Clear tape
+      </button>
+    </nav>
+  </header>
+
+  <div id="toast-area" aria-live="polite" aria-atomic="true"></div>
+
+  <main>
+
+    <!-- ========== CATALOG ========== -->
+    <section id="catalog" aria-label="Song catalog">
+      <h2>Catalog</h2>
+      <div class="catalog-filters">
+        <input type="search" id="catalog-search" placeholder="Search title or artist…" aria-label="Search songs" autocomplete="off" />
+        <select id="filter-genre" aria-label="Filter by genre">
+          <option value="all">All genres</option>
+          <option value="rock">Rock</option>
+          <option value="pop">Pop</option>
+          <option value="soul">Soul</option>
+          <option value="punk">Punk</option>
+          <option value="new-wave">New Wave</option>
+          <option value="hip-hop">Hip-Hop</option>
+        </select>
+        <select id="filter-mood" aria-label="Filter by mood">
+          <option value="all">All moods</option>
+          <option value="happy">Happy</option>
+          <option value="sad">Sad</option>
+          <option value="romantic">Romantic</option>
+          <option value="party">Party</option>
+          <option value="chill">Chill</option>
+        </select>
+      </div>
+      <ul id="catalog-list" class="song-list" role="list" aria-label="Available songs"></ul>
+      <p id="catalog-empty" class="empty-notice" hidden>No songs match your filter.</p>
+    </section>
+
+    <!-- ========== THE TAPE ========== -->
+    <section id="tape" aria-label="Your mixtape">
+      <h2>The Tape</h2>
+
+      <!-- Cassette visual -->
+      <div id="cassette" class="cassette" role="img" aria-label="Cassette — currently playing">
+        <div class="cassette-body">
+          <div class="cassette-top-edge"></div>
+          <div class="cassette-reels-row">
+            <div id="reel-left" class="reel" aria-hidden="true">
+              <div class="reel-hub"></div>
+              <div class="reel-spokes"></div>
+            </div>
+            <div class="cassette-label-window">
+              <span id="cassette-side-badge" class="side-badge">A</span>
+              <span id="cassette-track-name" class="cassette-track-name">—</span>
+              <span id="cassette-counter" class="tape-counter">0:00</span>
+            </div>
+            <div id="reel-right" class="reel" aria-hidden="true">
+              <div class="reel-hub"></div>
+              <div class="reel-spokes"></div>
+            </div>
+          </div>
+          <div class="cassette-bottom-edge"></div>
+        </div>
+      </div>
+
+      <!-- Transport controls -->
+      <div id="transport" class="transport" role="group" aria-label="Playback controls">
+        <button id="btn-rw" class="transport-btn" aria-label="Rewind 10 seconds">
+          <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M11 5l-7 5 7 5V5zm7 0l-7 5 7 5V5z" fill="currentColor"/></svg>
+        </button>
+        <button id="btn-prev" class="transport-btn" aria-label="Previous track">
+          <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M4 5h2v10H4V5zm11 0l-7 5 7 5V5z" fill="currentColor"/></svg>
+        </button>
+        <button id="btn-stop" class="transport-btn" aria-label="Stop">
+          <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><rect x="4" y="4" width="12" height="12" rx="1" fill="currentColor"/></svg>
+        </button>
+        <button id="btn-play" class="transport-btn transport-btn--play" aria-label="Play">
+          <svg id="icon-play" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M5 3l14 7-14 7V3z" fill="currentColor"/></svg>
+          <svg id="icon-pause" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" hidden><rect x="4" y="3" width="4" height="14" rx="1" fill="currentColor"/><rect x="12" y="3" width="4" height="14" rx="1" fill="currentColor"/></svg>
+        </button>
+        <button id="btn-next" class="transport-btn" aria-label="Next track">
+          <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M14 5h2v10h-2V5zM5 5l7 5-7 5V5z" fill="currentColor"/></svg>
+        </button>
+        <button id="btn-ff" class="transport-btn" aria-label="Fast forward 10 seconds">
+          <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M9 5l7 5-7 5V5zM2 5l7 5-7 5V5z" fill="currentColor"/></svg>
+        </button>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="progress-wrap" role="group" aria-label="Track progress">
+        <div id="progress-bar-outer" class="progress-bar-outer" aria-hidden="true">
+          <div id="progress-bar-inner" class="progress-bar-inner"></div>
+        </div>
+        <div class="progress-labels">
+          <span id="progress-pos">0:00</span>
+          <span id="now-playing-label" class="now-playing">—</span>
+          <span id="progress-dur">0:00</span>
+        </div>
+      </div>
+
+      <!-- Side selector -->
+      <div class="side-tabs" role="tablist" aria-label="Tape sides">
+        <button id="tab-side-a" class="side-tab active" role="tab" aria-selected="true" aria-controls="panel-side-a" data-side="A">Side A</button>
+        <button id="tab-side-b" class="side-tab" role="tab" aria-selected="false" aria-controls="panel-side-b" data-side="B">Side B</button>
+      </div>
+
+      <!-- Side A -->
+      <div id="panel-side-a" class="side-panel" role="tabpanel" aria-labelledby="tab-side-a">
+        <div class="side-meter-row" aria-label="Side A fill meter">
+          <span class="side-label">Side A</span>
+          <div class="side-meter-outer" role="progressbar" aria-valuemin="0" aria-valuemax="2700" aria-valuenow="0" aria-label="Side A used time">
+            <div id="meter-a" class="side-meter-inner"></div>
+          </div>
+          <span id="time-a" class="side-time">0:00 / 45:00</span>
+        </div>
+        <ul id="tracklist-a" class="track-list" role="list" aria-label="Side A tracks"></ul>
+        <p id="empty-a" class="empty-notice">Side A is empty. Add songs from the catalog.</p>
+        <p id="notice-a" class="inline-notice" hidden></p>
+      </div>
+
+      <!-- Side B -->
+      <div id="panel-side-b" class="side-panel" role="tabpanel" aria-labelledby="tab-side-b" hidden>
+        <div class="side-meter-row" aria-label="Side B fill meter">
+          <span class="side-label">Side B</span>
+          <div class="side-meter-outer" role="progressbar" aria-valuemin="0" aria-valuemax="2700" aria-valuenow="0" aria-label="Side B used time">
+            <div id="meter-b" class="side-meter-inner"></div>
+          </div>
+          <span id="time-b" class="side-time">0:00 / 45:00</span>
+        </div>
+        <ul id="tracklist-b" class="track-list" role="list" aria-label="Side B tracks"></ul>
+        <p id="empty-b" class="empty-notice">Side B is empty. Add songs from the catalog.</p>
+        <p id="notice-b" class="inline-notice" hidden></p>
+      </div>
+
+    </section>
+
+    <!-- ========== COVER DESIGNER ========== -->
+    <section id="cover" aria-label="Cover designer">
+      <h2>Cover Designer</h2>
+
+      <div class="cover-inputs">
+        <label>
+          <span>Tape title</span>
+          <input type="text" id="cover-title" maxlength="40" placeholder="My Best Tape" aria-label="Tape title" />
+        </label>
+        <label>
+          <span>To</span>
+          <input type="text" id="cover-to" maxlength="30" placeholder="Someone special" aria-label="To" />
+        </label>
+        <label>
+          <span>From</span>
+          <input type="text" id="cover-from" maxlength="30" placeholder="Me" aria-label="From" />
+        </label>
+        <label>
+          <span>Dedication</span>
+          <textarea id="cover-message" maxlength="200" placeholder="Every song here is a part of us." rows="3" aria-label="Dedication message"></textarea>
+        </label>
+      </div>
+
+      <fieldset class="theme-fieldset">
+        <legend>Theme</legend>
+        <div class="theme-swatches">
+          <label class="theme-swatch" title="Sunset Cassette">
+            <input type="radio" name="theme" value="sunset" checked aria-label="Sunset Cassette theme" />
+            <span class="swatch swatch--sunset"></span>
+            <span class="swatch-label">Sunset</span>
+          </label>
+          <label class="theme-swatch" title="Midnight Radio">
+            <input type="radio" name="theme" value="midnight" aria-label="Midnight Radio theme" />
+            <span class="swatch swatch--midnight"></span>
+            <span class="swatch-label">Midnight</span>
+          </label>
+          <label class="theme-swatch" title="Mint Tape">
+            <input type="radio" name="theme" value="mint" aria-label="Mint Tape theme" />
+            <span class="swatch swatch--mint"></span>
+            <span class="swatch-label">Mint</span>
+          </label>
+          <label class="theme-swatch" title="Bubblegum">
+            <input type="radio" name="theme" value="bubblegum" aria-label="Bubblegum theme" />
+            <span class="swatch swatch--bubblegum"></span>
+            <span class="swatch-label">Bubblegum</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <!-- J-card preview -->
+      <div id="jcard" class="jcard" aria-label="J-card cover preview">
+        <div class="jcard-spine" aria-hidden="true">
+          <span id="jcard-spine-title">My Best Tape</span>
+        </div>
+        <div class="jcard-front">
+          <div class="jcard-title" id="jcard-title">My Best Tape</div>
+          <div class="jcard-dedication">
+            <span class="jcard-to-from">
+              To: <span id="jcard-to">—</span> &nbsp;/&nbsp; From: <span id="jcard-from">—</span>
+            </span>
+            <p id="jcard-message" class="jcard-message"></p>
+          </div>
+          <div class="jcard-cassette-icon" aria-hidden="true">
+            <svg viewBox="0 0 60 30" width="60" height="30" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="58" height="28" rx="4" fill="rgba(0,0,0,0.3)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+              <circle cx="17" cy="15" r="8" fill="rgba(0,0,0,0.4)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+              <circle cx="17" cy="15" r="3" fill="rgba(255,255,255,0.4)"/>
+              <circle cx="43" cy="15" r="8" fill="rgba(0,0,0,0.4)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+              <circle cx="43" cy="15" r="3" fill="rgba(255,255,255,0.4)"/>
+              <rect x="24" y="10" width="12" height="10" rx="2" fill="rgba(255,255,255,0.2)"/>
+            </svg>
+          </div>
+        </div>
+        <div class="jcard-back">
+          <div class="jcard-tracklist">
+            <div class="jcard-side-col">
+              <h4>Side A</h4>
+              <ol id="jcard-side-a" class="jcard-tracks"></ol>
+            </div>
+            <div class="jcard-side-col">
+              <h4>Side B</h4>
+              <ol id="jcard-side-b" class="jcard-tracks"></ol>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer>
+    <p>All melodies are original chiptune-style renditions generated live by the WebAudio API. No recordings, no streaming, no tracking. Works fully offline.</p>
+  </footer>
+
+  <script src="songs.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
